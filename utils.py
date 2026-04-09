@@ -41,7 +41,7 @@ def count_percentage(code, mod, epoch, snr, channel_use, tradeoff_h):
             I_point = torch.tensor([-7, -5, -3, -1, 1, 3, 5, 7])
             order = 64
 
-        I, Q = torch.meshgrid(I_point, I_point)
+        I, Q = torch.meshgrid(I_point, I_point, indexing='ij')
         map = torch.cat((I.unsqueeze(-1), Q.unsqueeze(-1)), dim=2).reshape(order, 2)
         per_s = []
         fig = plt.figure(dpi=300)

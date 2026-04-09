@@ -4,15 +4,16 @@ This repository contains the original code and models for the work _Joint Coding
 [1] Y. Bo, Y. Duan, S. Shao and M. Tao, "Joint Coding-Modulation for Digital Semantic Communications via Variational Autoencoder," in IEEE Transactions on Communications, doi: 10.1109/TCOMM.2024.3386577.
 
 ## Requirements
-* matplotlib==3.7.2
-* numpy==1.23.5
-* pandas==2.0.3
-* scikit_learn==1.3.0
-* scipy==1.13.0
-* scikit-image==0.21.0
-* torch==1.12.1+cu113
-* torchvision==0.13.1+cu113
-* tqdm==4.65.0
+* Python >= 3.10, < 3.13
+* matplotlib>=3.8,<4
+* numpy>=1.26,<3
+* pandas>=2.2,<3
+* scikit_learn>=1.4,<2
+* scipy>=1.13,<2
+* scikit-image>=0.22,<1
+* torch>=2.4
+* torchvision>=0.19
+* tqdm>=4.65
 
 ## Training & Evaluation
 This code supports four modulation schemes: BPSK, 4QAM, 16QAM, and 64QAM.
