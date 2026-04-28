@@ -23,19 +23,19 @@ The analog network shares the same architecture as the JCM, except that the enco
 
 If you would like to train the JCM model using our provided architecture, you may run a command such as:
 ```
-python main.py --mode 'train' --mod_method '64qam' --pretrain_analog 0
+python main.py --mode train --mod_method 64qam --pretrain_analog 0
 ```
 The program will automatically load the pretrained analog model.
 
 For evaluation, you may use a command such as:
 ```
-python main.py --mode 'test' --mod_method '64qam' --pretrain_analog 0 --load_checkpoint 1
+python main.py --mode test --mod_method 64qam --pretrain_analog 0 --load_checkpoint 1
 ```
 
 If you prefer to adopt a different network architecture, you are welcome to replace our main architecture with your own design. 
 In this case, pretrain the analog model first using the following command:
 ```
-python main.py --mode 'train' --pretrain_analog 1
+python main.py --mode train --pretrain_analog 1
 ```
 
 ## Results

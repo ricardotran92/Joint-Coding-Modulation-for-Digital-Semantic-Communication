@@ -8,8 +8,19 @@ from train import train
 from train_analog import train_analog
 from evaluation import EVAL
 from utils import init_seeds
+from network import canonical_mod_method
 import os
 import argparse
+
+
+def canonical_mode(mode):
+    value = str(mode).strip().lower()
+    while len(value) >= 2 and (
+        (value[0] == "'" and value[-1] == "'") or
+        (value[0] == '"' and value[-1] == '"')
+    ):
+        value = value[1:-1].strip().lower()
+    return value
 
 
 def mischandler(config):
@@ -22,6 +33,8 @@ def mischandler(config):
 def main(config):
     # initialize random seed
     init_seeds()
+    config.mod_method = canonical_mod_method(config.mod_method)
+    config.mode = canonical_mode(config.mode)
 
     # prepare training & test data
     transform_train = transforms.Compose([
