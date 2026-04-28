@@ -11,6 +11,56 @@ from utils import init_seeds
 from network import canonical_mod_method
 import os
 import argparse
+import matplotlib.pyplot as plt
+
+
+def inspect_one_sample(net, data_loader, device):
+    net.eval()
+    data, target = next(iter(data_loader))
+    data, target = data.to(device), target.to(device)
+
+    with torch.no_grad():
+        code, z, z_hat, r_class, recon, debug = net(data, return_debug=True)
+
+    idx = 0
+    pred = torch.argmax(r_class[idx]).item()
+    print("\n=== Inspect One Sample ===")
+    print(f"target label: {target[idx].item()}, predicted label: {pred}")
+    print(f"X shape: {tuple(data[idx].shape)}")
+    print(f"h shape: {tuple(debug['h'][idx].shape)}")
+    print(f"q shape: {tuple(debug['q'][idx].shape)}")
+    print(f"Z shape: {tuple(debug['z_discrete'][idx].shape)}")
+    print(f"Z^ shape: {tuple(debug['z_hat'][idx].shape)}")
+    print(f"X^ shape: {tuple(debug['x_hat'][idx].shape)}")
+    print(f"S^ shape: {tuple(debug['s_hat'][idx].shape)}")
+
+    print("\nX[0, :2, :2]:")
+    print(data[idx, 0, :2, :2].detach().cpu())
+    print("\nh[:12]:")
+    print(debug['h'][idx, :12].detach().cpu())
+    print("\nq[0:5]:")
+    print(debug['q'][idx, :5].detach().cpu())
+    print("\nZ[0:12]:")
+    print(debug['z_discrete'][idx, :12].detach().cpu())
+    print("\nZ^[0:12]:")
+    print(debug['z_hat'][idx, :12].detach().cpu())
+    print("\nS^[:10]:")
+    print(debug['s_hat'][idx, :10].detach().cpu())
+
+    z_cpu = debug["z_discrete"][idx].detach().cpu().flatten()
+    z_hat_cpu = debug["z_hat"][idx].detach().cpu().flatten()
+    n = (z_cpu.numel() // 2) * 2
+    if n >= 2:
+        plt.figure(figsize=(6, 6))
+        plt.scatter(z_cpu[:n:2], z_cpu[1:n:2], s=10, alpha=0.8, label="Z (clean)")
+        plt.scatter(z_hat_cpu[:n:2], z_hat_cpu[1:n:2], s=10, alpha=0.6, label="Z^ (noisy)")
+        plt.title("Constellation of One Sample")
+        plt.xlabel("I")
+        plt.ylabel("Q")
+        plt.grid(True, alpha=0.3)
+        plt.legend()
+        plt.axis("equal")
+        plt.show()
 
 
 def canonical_mode(mode):
@@ -103,6 +153,9 @@ def main(config):
                                  config.snr_train, config.channel_use, config.mod_method)
                 net.load_state_dict(torch.load('./checkpoints' + model_name, map_location=torch.device('cpu')))
 
+            if getattr(config, "inspect_steps", 0):
+                inspect_one_sample(net, test_loader, device)
+
             acc, mse, psnr, ssim = EVAL(net, test_loader, device, config)
             print('acc: {:.3f}, mse: {:3f}, psnr: {:.3f}, ssmi: {:.3f}'.format(acc, mse, psnr, ssim))
 
@@ -136,6 +189,7 @@ if __name__ == '__main__':
     parser.add_argument('--model_path', type=str, default='./models')
     parser.add_argument('--result_path', type=str, default='./results')
     parser.add_argument('--dataset_path', type=str, default='./dataset')
+    parser.add_argument('--inspect_steps', type=int, default=0)
 
     config = parser.parse_args()
 

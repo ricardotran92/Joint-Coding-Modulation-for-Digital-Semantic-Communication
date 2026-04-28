@@ -1,6 +1,6 @@
 from torch import nn
 import torch
-from torch.nn.functional import gumbel_softmax
+from torch.nn.functional import gumbel_softmax, softmax
 from torch.nn import init
 from modules import Encoder, Decoder_Recon, Decoder_Class, awgn, normalize, ResidualBlock
 
@@ -111,10 +111,11 @@ class JCM(nn.Module):
         code = modulation(probs, self.device, self.mod_method)
         return code
 
-    def forward(self, x):
+    def forward(self, x, return_debug=False):
         x_f = self.encoder(x).reshape(x.shape[0], -1)
-        z = self.prob_convs(x_f).reshape(x.shape[0], -1, self.num_category)
-        code = self.reparameterize(z)
+        logits = self.prob_convs(x_f).reshape(x.shape[0], -1, self.num_category)
+        q = softmax(logits, dim=2)
+        code = self.reparameterize(logits)
 
         power, z = normalize(code)
 
@@ -125,6 +126,20 @@ class JCM(nn.Module):
 
         recon = self.decoder_recon(z_hat)
         r_class = self.decoder_class(z_hat)
+
+        if return_debug:
+            s_hat = softmax(r_class, dim=1)
+            debug = {
+                "h": x_f,
+                "q": q,
+                "z_discrete": code,
+                "z_norm": z,
+                "z_hat": z_hat,
+                "x_hat": recon,
+                "s_hat": s_hat,
+                "power": power,
+            }
+            return code, z, z_hat, r_class, recon, debug
 
         return code, z, z_hat, r_class, recon
 
